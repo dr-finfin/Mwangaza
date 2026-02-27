@@ -3,8 +3,6 @@ import jwt from 'jsonwebtoken';
 
 export interface AuthRequest extends Request {
   user?: { id: number };
-  headers: Request['headers'];
-  body: any;
 }
 
 export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -24,4 +22,3 @@ export const verifyToken = (req: AuthRequest, res: Response, next: NextFunction)
   } catch (err) {
     res.status(401).json({ msg: 'Token is not valid' });
   }
-};
