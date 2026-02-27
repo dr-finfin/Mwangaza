@@ -1,25 +1,37 @@
-import Database from 'better-sqlite3';
+import pg from 'pg';
+const { Pool } = pg;
 
-const db = new Database('mwangaza.db');
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL environment variable is not set');
+}
 
-db.exec(`
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+});
+
+// Create tables on startup
+pool.query(`
   CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
   );
 
   CREATE TABLE IF NOT EXISTS progress (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
     lesson_id TEXT NOT NULL,
     lesson_name TEXT,
-    completed BOOLEAN DEFAULT 0,
+    completed BOOLEAN DEFAULT FALSE,
     score INTEGER,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users (id)
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
   );
-`);
+`).then(() => {
+  console.log('Database tables ready');
+}).catch((err) => {
+  console.error('Failed to initialise database tables:', err);
+});
 
-export default db;
+export default pool;

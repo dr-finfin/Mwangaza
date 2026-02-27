@@ -49,6 +49,16 @@ npm run dev
 
 The app will be available at `http://localhost:5173`. API calls are proxied to `http://localhost:3000` automatically.
 
+## Database Setup (Supabase — free PostgreSQL)
+
+1. Go to https://supabase.com → New project
+2. Once created, go to **Settings → Database**
+3. Copy the **Connection string** (URI format) — it looks like:
+   `postgres://postgres:[PASSWORD]@db.[REF].supabase.co:5432/postgres`
+4. Use this as your `DATABASE_URL` environment variable on Render
+
+The tables (`users` and `progress`) are created automatically when the server starts for the first time.
+
 ## Deployment
 
 ### Backend → Render (free tier)
@@ -61,6 +71,7 @@ The app will be available at `http://localhost:5173`. API calls are proxied to `
 6. Add environment variables:
    - `GEMINI_API_KEY` — your Gemini API key
    - `JWT_SECRET` — a long random string
+   - `DATABASE_URL` — your Supabase connection string
    - `NODE_ENV` — `production`
 7. Deploy and copy the service URL (e.g. `https://mwangaza-api.onrender.com`)
 
@@ -82,10 +93,11 @@ The `netlify.toml` and `public/_redirects` in `client/` handle SPA routing autom
 |---|---|---|
 | `GEMINI_API_KEY` | server `.env` | Google Gemini API key |
 | `JWT_SECRET` | server `.env` | Secret for signing JWTs |
+| `DATABASE_URL` | server `.env` | PostgreSQL connection string (Supabase) |
 | `PORT` | server `.env` | Server port (auto-set by Render) |
 | `VITE_API_URL` | client `.env` | Backend API URL for production |
 
 ## Known Limitations
 
-- SQLite database is stored on the server's filesystem. On Render free tier, the disk resets on each deploy — consider upgrading to a persistent disk or migrating to PostgreSQL for production use.
 - The Gemini model `gemini-3-flash-preview` may change — update `server/src/services/geminiService.ts` if needed.
+- User data persists permanently in Supabase PostgreSQL — no data loss on redeployment.
