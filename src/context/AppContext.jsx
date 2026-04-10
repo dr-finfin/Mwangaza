@@ -15,45 +15,50 @@ export const AppProvider = ({ children }) => {
   const [progress,      setProgress]    = useState({})
   const [notification,  setNotification] = useState(null)
   const [selectedGrade, setSelectedGrade] = useState(4)
+  const [progressLoaded, setProgressLoaded] = useState(false)
 
   const t = (key) => UI_STRINGS[language]?.[key] || UI_STRINGS.en[key] || key
 
-  // Navigate to dashboard when user signs in
   useEffect(() => {
     if (user) {
       navigate('/dashboard')
     }
   }, [user])
 
-  // Dark mode class toggle
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode)
   }, [darkMode])
 
-  // Load progress from Supabase
+  // Load progress — runs as soon as user is available
   useEffect(() => {
     if (!user) {
       setProgress({})
+      setProgressLoaded(false)
       return
     }
 
     const fetchProgress = async () => {
-      const { data, error } = await supabase
-        .from('lesson_progress')
-        .select('*')
-        .eq('user_id', user.id)
+      try {
+        const { data, error } = await supabase
+          .from('lesson_progress')
+          .select('*')
+          .eq('user_id', user.id)
 
-      if (!error && data) {
-        const map = {}
-        data.forEach(row => { map[row.lesson_id] = row })
-        setProgress(map)
+        if (!error && data) {
+          const map = {}
+          data.forEach(row => { map[row.lesson_id] = row })
+          setProgress(map)
+        }
+      } catch (err) {
+        console.error('Progress fetch error:', err)
+      } finally {
+        setProgressLoaded(true)
       }
     }
 
     fetchProgress()
   }, [user])
 
-  // Save lesson progress
   const saveLessonProgress = useCallback(async (lessonId, score, passed) => {
     if (!user) return
 
@@ -72,7 +77,7 @@ export const AppProvider = ({ children }) => {
       updated_at: new Date().toISOString(),
     }
 
-    // Optimistic update
+    // Optimistic update — UI updates instantly
     setProgress(prev => ({ ...prev, [lessonId]: progressData }))
 
     const { error } = await supabase
@@ -99,26 +104,23 @@ export const AppProvider = ({ children }) => {
     return { error }
   }, [user, progress, updateProfile])
 
-  // Notification helper
   const showNotification = (message, type = 'info') => {
     setNotification({ message, type, id: Date.now() })
     setTimeout(() => setNotification(null), 3500)
   }
 
-  const value = {
-    language,      setLanguage,
-    darkMode,      setDarkMode,
-    progress,
-    selectedGrade, setSelectedGrade,
-    saveLessonProgress,
-    showNotification,
-    notification,
-    navigate,
-    t,
-  }
-
   return (
-    <AppContext.Provider value={value}>
+    <AppContext.Provider value={{
+      language,      setLanguage,
+      darkMode,      setDarkMode,
+      progress,      progressLoaded,
+      selectedGrade, setSelectedGrade,
+      saveLessonProgress,
+      showNotification,
+      notification,
+      navigate,
+      t,
+    }}>
       {children}
     </AppContext.Provider>
   )
