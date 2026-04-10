@@ -1,100 +1,82 @@
-import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { useApp } from '../../context/AppContext';
+import React, { useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import { useApp } from '../../context/AppContext'
 
 const Navbar = ({ onMenuToggle }) => {
-  const { profile, signOut } = useAuth();
-  const {
-    t,
-    language,
-    setLanguage,
-    darkMode,
-    setDarkMode,
-    currentView,
-    setCurrentView,
-  } = useApp();
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const navigate  = useNavigate()
+  const location  = useLocation()
+  const { profile, signOut } = useAuth()
+  const { t, language, setLanguage, darkMode, setDarkMode } = useApp()
+
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [showSearch,   setShowSearch]   = useState(false)
+  const [searchQuery,  setSearchQuery]  = useState('')
 
   const initials = profile?.full_name
-    ? profile.full_name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
-    : '??';
+    ? profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : '??'
+
+  const pathLabels = {
+    '/dashboard':  'Home',
+    '/curriculum': 'Learn',
+    '/progress':   'Progress',
+    '/profile':    'Profile',
+  }
+  const currentLabel = pathLabels[location.pathname] || ''
 
   return (
-    <header
-      className="fixed top-0 right-0 left-0 lg:left-64 z-40 bg-white/80 dark:bg-gray-900/80 
-                       backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50"
-    >
+    <header className="fixed top-0 right-0 left-0 lg:left-64 z-40
+                       bg-white/90 dark:bg-gray-900/90 backdrop-blur-md
+                       border-b border-gray-100 dark:border-gray-800">
       <div className="flex items-center justify-between px-4 sm:px-6 h-16">
-        {/* Left: Menu (mobile) + Breadcrumb */}
+
+        {/* Left */}
         <div className="flex items-center gap-3">
           <button
             onClick={onMenuToggle}
-            className="lg:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 
-                       text-gray-500 transition-colors"
+            className="lg:hidden p-2 rounded-xl hover:bg-gray-100
+                       dark:hover:bg-gray-800 text-gray-500 transition-colors"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
           </button>
 
           {/* Breadcrumb */}
           <div className="hidden sm:flex items-center gap-2 text-sm">
-            <span className="text-gray-400 dark:text-gray-500">
-              {t('home')}
-            </span>
-            {currentView !== 'dashboard' && (
+            <span className="text-gray-400 dark:text-gray-500">Mwangaza</span>
+            {currentLabel && (
               <>
-                <span className="text-gray-300">/</span>
-                <span className="text-gray-700 dark:text-gray-300 font-medium capitalize">
-                  {currentView}
+                <span className="text-gray-200 dark:text-gray-700">/</span>
+                <span className="text-gray-800 dark:text-gray-200 font-semibold">
+                  {currentLabel}
                 </span>
               </>
             )}
           </div>
         </div>
 
-        {/* Right: Search + Controls + Avatar */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Right */}
+        <div className="flex items-center gap-2">
+
           {/* Search */}
           {showSearch ? (
             <div className="relative flex items-center">
               <input
                 autoFocus
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onBlur={() => {
-                  setShowSearch(false);
-                  setSearchQuery('');
-                }}
+                onChange={e => setSearchQuery(e.target.value)}
+                onBlur={() => { setShowSearch(false); setSearchQuery('') }}
                 placeholder={t('search')}
-                className="w-48 sm:w-64 px-4 py-2 pr-8 bg-gray-100 dark:bg-gray-800 
-                           border border-gray-200 dark:border-gray-700 rounded-xl text-sm 
-                           text-gray-700 dark:text-gray-300 placeholder-gray-400 
+                className="w-44 sm:w-60 px-4 py-2 pr-8 bg-gray-100 dark:bg-gray-800
+                           border border-gray-200 dark:border-gray-700 rounded-xl
+                           text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400
                            focus:outline-none focus:border-blue-500 transition-all"
               />
               <button
-                onMouseDown={() => {
-                  setShowSearch(false);
-                  setSearchQuery('');
-                }}
-                className="absolute right-2 text-gray-400 hover:text-gray-600 text-lg"
+                onMouseDown={() => { setShowSearch(false); setSearchQuery('') }}
+                className="absolute right-2.5 text-gray-400 hover:text-gray-600 text-lg leading-none"
               >
                 ×
               </button>
@@ -102,22 +84,11 @@ const Navbar = ({ onMenuToggle }) => {
           ) : (
             <button
               onClick={() => setShowSearch(true)}
-              className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 
-                         text-gray-500 dark:text-gray-400 transition-colors"
-              title={t('search')}
+              className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800
+                         text-gray-400 transition-colors"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
               </svg>
             </button>
           )}
@@ -125,63 +96,53 @@ const Navbar = ({ onMenuToggle }) => {
           {/* Language toggle */}
           <button
             onClick={() => setLanguage(language === 'en' ? 'sw' : 'en')}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl 
-                       hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 
-                       text-sm font-medium transition-all border border-gray-200/50 dark:border-gray-700/50"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl
+                       hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500
+                       dark:text-gray-400 text-xs font-semibold transition-all
+                       border border-gray-100 dark:border-gray-800"
           >
-            <span>{language === 'en' ? '🇬🇧' : '🇰🇪'}</span>
-            <span>{language.toUpperCase()}</span>
+            {language === 'en' ? '🇬🇧 EN' : '🇰🇪 SW'}
           </button>
 
           {/* Dark mode */}
           <button
             onClick={() => setDarkMode(!darkMode)}
-            className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 
-                       text-gray-500 dark:text-gray-400 transition-colors"
-            title={t('darkMode')}
+            className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800
+                       text-gray-400 transition-colors"
           >
-            <span className="text-lg">{darkMode ? '☀️' : '🌙'}</span>
+            <span className="text-base">{darkMode ? '☀️' : '🌙'}</span>
           </button>
 
-          {/* Avatar / Dropdown */}
+          {/* Avatar + Dropdown */}
           <div className="relative">
             <button
               onClick={() => setShowDropdown(!showDropdown)}
-              className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-2xl 
-                         hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"
+              className="flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-2xl
+                         hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
             >
               {profile?.avatar_url ? (
                 <img
                   src={profile.avatar_url}
                   alt="avatar"
-                  className="w-8 h-8 rounded-xl object-cover ring-2 ring-blue-500/20"
+                  className="w-7 h-7 rounded-lg object-cover"
                 />
               ) : (
-                <div
-                  className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 
-                                rounded-xl flex items-center justify-center text-white text-xs font-bold 
-                                ring-2 ring-blue-500/20"
-                >
+                <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center
+                                justify-center text-white text-xs font-bold">
                   {initials}
                 </div>
               )}
-              <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300 max-w-[100px] truncate">
+              <span className="hidden sm:block text-sm font-medium text-gray-700
+                               dark:text-gray-300 max-w-[90px] truncate">
                 {profile?.full_name?.split(' ')[0] || 'Student'}
               </span>
               <svg
-                className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
+                className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${
                   showDropdown ? 'rotate-180' : ''
                 }`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
               </svg>
             </button>
 
@@ -192,31 +153,34 @@ const Navbar = ({ onMenuToggle }) => {
                   className="fixed inset-0 z-40"
                   onClick={() => setShowDropdown(false)}
                 />
-                <div
-                  className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-gray-900 
-                                rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 
-                                overflow-hidden z-50 animate-slide-up"
-                >
+                <div className="absolute right-0 top-full mt-2 w-52 bg-white
+                                dark:bg-gray-900 rounded-2xl shadow-xl
+                                border border-gray-100 dark:border-gray-800
+                                overflow-hidden z-50 animate-scale-in">
+
                   {/* Profile header */}
-                  <div className="px-4 py-3 bg-gradient-to-br from-blue-50 to-gold-50 dark:from-blue-950 dark:to-gray-900 border-b border-gray-100 dark:border-gray-800">
+                  <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800
+                                  bg-gray-50 dark:bg-gray-800/50">
                     <div className="font-semibold text-gray-800 dark:text-white text-sm truncate">
                       {profile?.full_name || 'Student'}
                     </div>
-                    <div className="text-gray-500 dark:text-gray-400 text-xs truncate">
+                    <div className="text-gray-400 text-xs truncate mt-0.5">
                       {profile?.email}
                     </div>
-                    <div className="mt-1.5 flex items-center gap-1.5">
-                      <span
-                        className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 
-                                       px-2 py-0.5 rounded-full font-medium"
-                      >
+                    <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                      <span className="text-xs bg-blue-50 dark:bg-blue-900/30
+                                       text-blue-600 dark:text-blue-400
+                                       px-2 py-0.5 rounded-full font-medium">
                         Grade {profile?.selected_grade || 4}
                       </span>
                       <span
-                        className="text-xs bg-gold-100 dark:bg-gold-900/30 text-gold-600 dark:text-gold-400 
-                                       px-2 py-0.5 rounded-full font-medium flex items-center gap-1"
+                        className="text-xs px-2 py-0.5 rounded-full font-medium"
+                        style={{
+                          backgroundColor: 'rgba(201,168,76,0.12)',
+                          color: '#B8860B',
+                        }}
                       >
-                        🔥 {profile?.streak_days || 0} days
+                        🔥 {profile?.streak_days || 0}d
                       </span>
                     </div>
                   </div>
@@ -227,35 +191,30 @@ const Navbar = ({ onMenuToggle }) => {
                       {
                         icon: '👤',
                         label: t('profile'),
-                        action: () => {
-                          setCurrentView('profile');
-                          setShowDropdown(false);
-                        },
+                        action: () => { navigate('/profile'); setShowDropdown(false) },
+                      },
+                      {
+                        icon: '📊',
+                        label: 'Progress',
+                        action: () => { navigate('/progress'); setShowDropdown(false) },
                       },
                       {
                         icon: language === 'en' ? '🇰🇪' : '🇬🇧',
-                        label: `${t('language')}: ${
-                          language === 'en' ? 'Kiswahili' : 'English'
-                        }`,
-                        action: () => {
-                          setLanguage(language === 'en' ? 'sw' : 'en');
-                          setShowDropdown(false);
-                        },
+                        label: language === 'en' ? 'Switch to Kiswahili' : 'Switch to English',
+                        action: () => { setLanguage(language === 'en' ? 'sw' : 'en'); setShowDropdown(false) },
                       },
                       {
                         icon: darkMode ? '☀️' : '🌙',
                         label: t('darkMode'),
-                        action: () => {
-                          setDarkMode(!darkMode);
-                          setShowDropdown(false);
-                        },
+                        action: () => { setDarkMode(!darkMode); setShowDropdown(false) },
                       },
                     ].map((item, i) => (
                       <button
                         key={i}
                         onClick={item.action}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 
-                                   hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
+                                   text-gray-600 dark:text-gray-300 hover:bg-gray-50
+                                   dark:hover:bg-gray-800 transition-colors text-left"
                       >
                         <span>{item.icon}</span>
                         {item.label}
@@ -265,12 +224,10 @@ const Navbar = ({ onMenuToggle }) => {
 
                   <div className="border-t border-gray-100 dark:border-gray-800 py-1">
                     <button
-                      onClick={() => {
-                        signOut();
-                        setShowDropdown(false);
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 
-                                 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors text-left"
+                      onClick={() => { signOut(); setShowDropdown(false) }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
+                                 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20
+                                 transition-colors text-left"
                     >
                       <span>🚪</span>
                       {t('signOut')}
@@ -283,7 +240,7 @@ const Navbar = ({ onMenuToggle }) => {
         </div>
       </div>
     </header>
-  );
-};
+  )
+}
 
-export default Navbar;
+export default Navbar
